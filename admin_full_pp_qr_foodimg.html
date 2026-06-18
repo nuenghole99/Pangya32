@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Admin — ปังย่า บ้าน32</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@500;600;700&family=Sarabun&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sarabun',sans-serif;background:#f5f3f0;color:#1a1614;max-width:520px;margin:0 auto;padding-bottom:24px}
+h1,h2,button,label{font-family:'Prompt',sans-serif}
+.pin-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center;background:#faf7f4}
+.pin-wrap h1{font-size:20px;margin:12px 0 6px}
+.pin-wrap p{font-size:13px;color:#8a817c;margin-bottom:22px}
+.pin-in{width:180px;text-align:center;font-size:22px;letter-spacing:8px;padding:12px;border:2px solid #eee7e2;border-radius:12px;outline:none;background:#fff}
+.pin-in:focus{border-color:#ff5a1f}
+.pin-btn{margin-top:12px;width:180px;padding:13px;background:#ff5a1f;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer}
+.pin-err{color:#e0440e;font-size:13px;margin-top:8px;min-height:18px}
+.topbar{background:#1a1614;color:#fff;padding:16px 18px}
+.topbar h1{font-size:18px;font-weight:600}
+.topbar p{font-size:12px;opacity:.65;margin-top:3px}
+.wrap{padding:14px}
+.box{background:#fff;border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.box h2{font-size:15px;margin-bottom:12px;display:flex;align-items:center;gap:7px;font-weight:600}
+.box h2::before{content:'';width:4px;height:14px;background:#ff5a1f;border-radius:3px;display:inline-block;flex-shrink:0}
+label{font-size:13px;display:block;margin:9px 0 4px;color:#555;font-weight:500}
+input[type=text],input[type=tel],input[type=number]{width:100%;border:1.5px solid #eee7e2;border-radius:10px;padding:10px 12px;font-size:14px;outline:none;background:#fff;font-family:'Sarabun',sans-serif}
+input:focus{border-color:#ff5a1f}
+input[type=file]{width:100%;margin-top:6px;font-size:13px}
+.r2{display:flex;gap:8px}.r2>div{flex:1}
+.btn{width:100%;border:none;border-radius:11px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;margin-top:10px;color:#fff;font-family:'Prompt',sans-serif}
+.btn:disabled{opacity:.5;cursor:wait}
+.btn-or{background:#ff5a1f}
+.btn-gr{background:#13b36a}
+.btn-gy{background:#cfc9c4;color:#1a1614}
+.mitem{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f0ebe6}
+.mitem:last-child{border-bottom:none}
+.mthumb{width:46px;height:46px;border-radius:9px;background:#ffe3d2;display:grid;place-items:center;font-size:22px;overflow:hidden;flex-shrink:0}
+.mthumb img{width:100%;height:100%;object-fit:cover}
+.mname{font-weight:600;font-size:14px;font-family:'Prompt',sans-serif}
+.mprice{font-size:12px;color:#8a817c;margin-top:2px}
+.del,.edit{border:none;border-radius:8px;padding:7px 10px;font-size:12px;cursor:pointer;flex-shrink:0;font-family:'Prompt',sans-serif}
+.del{background:#ffecec;color:#e0440e}
+.edit{background:#fff1ea;color:#e0440e;margin-right:5px}
+.empty{text-align:center;color:#8a817c;padding:20px;font-size:13px}
+.img-prev{width:88px;height:88px;border-radius:10px;object-fit:cover;border:1px solid #eee;margin:8px auto 0;display:none}
+.qr-prev{width:128px;height:128px;border-radius:10px;object-fit:contain;border:1px solid #eee;margin:8px auto;display:none;background:#fff}
+.st{font-size:13px;font-weight:600;margin-top:8px;min-height:20px;padding:6px 10px;border-radius:8px;display:none}
+.st.ok{background:#e8f9ef;color:#13b36a;display:block}
+.st.er{background:#ffecec;color:#e0440e;display:block}
+.st.ld{background:#fff7e6;color:#b8860b;display:block}
+.conn{padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600;text-align:center;margin-bottom:10px}
+.conn-ok{background:#e8f9ef;color:#13b36a}
+.conn-no{background:#fff7e6;color:#b8860b}
+.note{font-size:12px;color:#8a817c;margin-top:6px;line-height:1.5}
+.ppbox{background:#fff1ea;border-radius:10px;padding:12px;text-align:center;margin-bottom:10px}
+.ppnum{font-size:20px;font-weight:700;color:#e0440e;font-family:'Prompt',sans-serif}
+.qrbox{text-align:center;margin:10px 0}
+.qrbox img{width:120px;height:120px;border-radius:10px;object-fit:contain;border:1px solid #eee;background:#fff}
+</style>
+</head>
+<body>
+
+<div id="pinWrap" class="pin-wrap">
+  <div style="font-size:42px">🔒</div>
+  <h1>ปังย่า บ้าน32</h1>
+  <p>ใส่ PIN เพื่อจัดการร้าน</p>
+  <input id="pinIn" class="pin-in" type="password" inputmode="numeric" placeholder="••••" maxlength="10">
+  <button class="pin-btn" onclick="chkPin()">เข้าสู่ระบบ</button>
+  <div id="pinErr" class="pin-err"></div>
+</div>
+
+<div id="mainWrap" style="display:none">
+<div class="topbar">
+  <h1>ปังย่า บ้าน32 — Admin</h1>
+  <p>อัปเดตเมนู รูปอาหาร พร้อมเพย์ และ QR ให้แอพลูกค้า</p>
+</div>
+<div class="wrap">
+
+<div id="connBadge" class="conn conn-no">⏳ กำลังเชื่อมต่อ...</div>
+
+<div class="box">
+  <h2>💳 พร้อมเพย์ / QR สแกนจ่าย</h2>
+  <div class="ppbox">
+    <div class="ppnum" id="ppShow">กำลังโหลด...</div>
+    <div style="font-size:12px;color:#8a817c;margin-top:3px">เลขพร้อมเพย์ปัจจุบัน</div>
+  </div>
+
+  <label>เปลี่ยนเลขพร้อมเพย์</label>
+  <input type="tel" id="ppIn" pattern="[0-9]*" placeholder="เช่น 0839617064" inputmode="numeric">
+  <button class="btn btn-or" id="ppBtn" onclick="savePP()">💾 บันทึกเลขพร้อมเพย์</button>
+  <div class="st" id="ppSt"></div>
+
+  <div class="qrbox" id="qrCurrent"></div>
+  <label>อัปโหลดรูป QR จากแอปธนาคาร</label>
+  <input type="file" id="qrFile" accept="image/*">
+  <img id="qrPrev" class="qr-prev">
+  <button class="btn btn-or" id="qrBtn" onclick="saveQR()">📤 บันทึกรูป QR</button>
+  <button class="btn btn-gy" onclick="deleteQR()">ลบ QR ใช้ระบบสร้างอัตโนมัติ</button>
+  <div class="st" id="qrSt"></div>
+  <p class="note">ถ้าอัป QR เอง แอพลูกค้าจะแสดงรูป QR นี้แทน QR อัตโนมัติ</p>
+</div>
+
+<div class="box">
+  <h2>➕ เพิ่ม / แก้ไขเมนู</h2>
+  <label>ID</label>
+  <input type="text" id="mId" placeholder="ปล่อยว่างถ้าเพิ่มใหม่">
+  <label>ชื่อเมนู *</label>
+  <input type="text" id="mNm" placeholder="เช่น กะเพราไข่ดาว">
+  <div class="r2">
+    <div><label>ราคา (บาท) *</label><input type="number" id="mPr" inputmode="numeric" placeholder="60"></div>
+    <div><label>อิโมจิ</label><input type="text" id="mEm" placeholder="🍳" maxlength="4"></div>
+  </div>
+  <label>คำอธิบาย</label>
+  <input type="text" id="mDs" placeholder="เช่น ร้อนๆ ใส่ไข่ดาว">
+  <label>ป้าย</label>
+  <input type="text" id="mTg" placeholder="ขายดี">
+
+  <label>URL รูปเมนู</label>
+  <input type="text" id="mImgUrl" placeholder="https://...">
+
+  <label>หรืออัปโหลดรูปอาหาร</label>
+  <input type="file" id="mImgFile" accept="image/*">
+  <img id="mPrev" class="img-prev">
+
+  <p class="note">รูปจะถูกย่อขนาดก่อนส่ง เพื่อให้บันทึกใน Google Sheet ได้ง่าย</p>
+
+  <button class="btn btn-gr" id="addBtn" onclick="saveMenu()">💾 บันทึกเมนู</button>
+  <button class="btn btn-gy" onclick="clearForm()">ล้างฟอร์ม</button>
+  <div class="st" id="addSt"></div>
+</div>
+
+<div class="box">
+  <h2>📋 เมนูทั้งหมด (<span id="cnt">...</span>)</h2>
+  <div id="mList"><div class="empty">กำลังโหลด...</div></div>
+  <button class="btn btn-gy" style="margin-top:10px" onclick="loadAll()">🔄 รีเฟรช</button>
+</div>
+
+</div>
+</div>
+
+<script>
+var API="https://script.google.com/macros/s/AKfycbzR4NctAcK0emHqllkrye9beSshAx8CA-h-djfMfku8eCZ_MwUj04-kBGT4042JCk6PMQ/exec";
+var PIN="3232";
+var menuCache=[];
+var menuImageData="";
+var qrImageData="";
+
+function Q(id){return document.getElementById(id)}
+
+function st(id,msg,cls){
+  var el=Q(id);
+  el.textContent=msg;
+  el.className="st "+(cls||"");
+}
+
+Q("pinIn").addEventListener("keydown",function(e){if(e.key==="Enter")chkPin();});
+function chkPin(){
+  if(Q("pinIn").value===PIN){
+    Q("pinWrap").style.display="none";
+    Q("mainWrap").style.display="block";
+    loadAll();
+  }else{
+    Q("pinErr").textContent="รหัสไม่ถูก ลองใหม่";
+    Q("pinIn").value="";
+  }
+}
+
+function enc(v){return encodeURIComponent(v == null ? "" : String(v));}
+
+function call(params, cb){
+  var fn="_adm"+Date.now()+(Math.random()*9999|0);
+  var s=document.createElement("script");
+  var done=false;
+
+  var t=setTimeout(function(){
+    if(done)return;
+    done=true;
+    delete window[fn];
+    if(s.parentNode)s.parentNode.removeChild(s);
+    Q("connBadge").textContent="❌ timeout — เช็ก Apps Script / Deploy";
+    Q("connBadge").className="conn conn-no";
+    if(cb)cb(null);
+  },15000);
+
+  window[fn]=function(d){
+    if(done)return;
+    done=true;
+    clearTimeout(t);
+    delete window[fn];
+    if(s.parentNode)s.parentNode.removeChild(s);
+    if(cb)cb(d);
+  };
+
+  var qs=Object.keys(params).map(function(k){
+    return enc(k)+"="+enc(params[k]);
+  }).join("&");
+
+  s.onerror=function(){
+    if(done)return;
+    done=true;
+    clearTimeout(t);
+    delete window[fn];
+    if(s.parentNode)s.parentNode.removeChild(s);
+    Q("connBadge").textContent="❌ เชื่อมต่อไม่ได้ — เช็ก URL API";
+    Q("connBadge").className="conn conn-no";
+    if(cb)cb(null);
+  };
+
+  s.src=API+"?cb="+fn+"&"+qs+"&_="+Date.now();
+  document.head.appendChild(s);
+}
+
+function loadAll(){
+  Q("connBadge").textContent="⏳ กำลังโหลด...";
+  Q("connBadge").className="conn conn-no";
+  call({a:"all"},function(d){
+    if(!d) return;
+    if(d.ok===false){
+      Q("connBadge").textContent="❌ API error: "+(d.error||"");
+      Q("connBadge").className="conn conn-no";
+      return;
+    }
+    Q("connBadge").textContent="✅ เชื่อมต่อแล้ว — ข้อมูลล่าสุด";
+    Q("connBadge").className="conn conn-ok";
+
+    Q("ppShow").textContent=d.pp||"0839617064";
+    if(d.qr){
+      Q("qrCurrent").innerHTML='<img src="'+d.qr+'"><div style="font-size:12px;color:#13b36a;margin-top:4px">มี QR ที่อัปไว้แล้ว</div>';
+    }else{
+      Q("qrCurrent").innerHTML='<div style="font-size:12px;color:#8a817c">ยังไม่มี QR อัปโหลด ระบบจะสร้าง QR อัตโนมัติ</div>';
+    }
+
+    menuCache=d.menu||[];
+    renderMenu(menuCache);
+  });
+}
+
+function renderMenu(menu){
+  Q("cnt").textContent=menu.length+" อย่าง";
+  var box=Q("mList");
+  if(!menu.length){
+    box.innerHTML='<div class="empty">ยังไม่มีเมนู กดเพิ่มด้านบนได้เลย</div>';
+    return;
+  }
+  box.innerHTML=menu.map(function(m,i){
+    var th=m.img?'<img src="'+m.img+'" onerror="this.style.display=\'none\'">':(m.emoji||"🍽️");
+    return '<div class="mitem">'
+      +'<div class="mthumb">'+th+'</div>'
+      +'<div style="flex:1;min-width:0">'
+      +'<div class="mname">'+(m.name||"")+'</div>'
+      +'<div class="mprice">฿'+Number(m.price||0).toLocaleString("th-TH")+(m.tag?" · "+m.tag:"")+'</div>'
+      +'</div>'
+      +'<button class="edit" onclick="editMenu('+i+')">แก้ไข</button>'
+      +'<button class="del" id="del_'+m.id+'" onclick="deleteMenu(\''+m.id+'\')">ลบ</button>'
+      +'</div>';
+  }).join("");
+}
+
+function editMenu(i){
+  var m=menuCache[i];
+  Q("mId").value=m.id||"";
+  Q("mNm").value=m.name||"";
+  Q("mPr").value=m.price||"";
+  Q("mEm").value=m.emoji||"🍽️";
+  Q("mDs").value=m.desc||"";
+  Q("mTg").value=m.tag||"";
+  Q("mImgUrl").value=m.img||"";
+  menuImageData="";
+  Q("mPrev").style.display="none";
+  st("addSt","กำลังแก้ไข: "+(m.name||""),"ld");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function clearForm(){
+  Q("mId").value="";
+  Q("mNm").value="";
+  Q("mPr").value="";
+  Q("mEm").value="";
+  Q("mDs").value="";
+  Q("mTg").value="";
+  Q("mImgUrl").value="";
+  Q("mImgFile").value="";
+  menuImageData="";
+  Q("mPrev").style.display="none";
+  st("addSt","ล้างฟอร์มแล้ว","ok");
+}
+
+function shrinkImage(file,maxW,q,cb){
+  var r=new FileReader();
+  r.onload=function(e){
+    var img=new Image();
+    img.onload=function(){
+      var sc=Math.min(1,maxW/img.width);
+      var w=Math.round(img.width*sc),h=Math.round(img.height*sc);
+      var c=document.createElement("canvas");
+      c.width=w;c.height=h;
+      c.getContext("2d").drawImage(img,0,0,w,h);
+      cb(c.toDataURL("image/jpeg",q));
+    };
+    img.src=e.target.result;
+  };
+  r.readAsDataURL(file);
+}
+
+Q("mImgFile").addEventListener("change",function(e){
+  var f=e.target.files[0];if(!f)return;
+  shrinkImage(f,420,0.62,function(d){
+    menuImageData=d;
+    Q("mPrev").src=d;
+    Q("mPrev").style.display="block";
+    Q("mImgUrl").value="";
+  });
+});
+
+Q("qrFile").addEventListener("change",function(e){
+  var f=e.target.files[0];if(!f)return;
+  shrinkImage(f,520,0.72,function(d){
+    qrImageData=d;
+    Q("qrPrev").src=d;
+    Q("qrPrev").style.display="block";
+  });
+});
+
+function saveMenu(){
+  var nm=Q("mNm").value.trim();
+  var pr=Q("mPr").value.trim();
+  if(!nm){st("addSt","⚠️ ใส่ชื่อเมนูก่อน","er");return;}
+  if(!pr){st("addSt","⚠️ ใส่ราคาก่อน","er");return;}
+
+  var item={
+    id:Q("mId").value.trim() || String(Date.now()),
+    name:nm,
+    price:Number(pr)||0,
+    desc:Q("mDs").value.trim(),
+    emoji:Q("mEm").value.trim() || "🍽️",
+    tag:Q("mTg").value.trim(),
+    img:menuImageData || Q("mImgUrl").value.trim()
+  };
+
+  Q("addBtn").disabled=true;
+  st("addSt","กำลังบันทึก...","ld");
+
+  call({a:"saveMenu",data:JSON.stringify(item)},function(d){
+    Q("addBtn").disabled=false;
+    if(!d){st("addSt","❌ บันทึกไม่ได้: ไม่ได้รับข้อมูลกลับ","er");return;}
+    if(d.ok===false){st("addSt","❌ บันทึกไม่ได้: "+(d.error||""),"er");return;}
+    st("addSt","✅ บันทึกแล้ว — กำลังโหลดเมนูใหม่","ok");
+    clearForm();
+    loadAll();
+  });
+}
+
+function deleteMenu(id){
+  if(!confirm("ลบเมนูนี้?"))return;
+  var btn=Q("del_"+id);if(btn)btn.disabled=true;
+  call({a:"deleteMenu",id:id},function(d){
+    if(!d){if(btn)btn.disabled=false;return;}
+    if(d.ok===false){alert("ลบไม่ได้: "+(d.error||""));if(btn)btn.disabled=false;return;}
+    loadAll();
+  });
+}
+
+function savePP(){
+  var v=Q("ppIn").value.trim().replace(/[^0-9]/g,"");
+  if(!v){st("ppSt","⚠️ ใส่เลขพร้อมเพย์ก่อน","er");return;}
+  if(v[0]!=="0" && v.length<13) v="0"+v;
+
+  Q("ppBtn").disabled=true;
+  st("ppSt","กำลังบันทึกเลขพร้อมเพย์...","ld");
+
+  call({a:"setPP",v:v},function(d){
+    Q("ppBtn").disabled=false;
+    if(!d){st("ppSt","❌ บันทึกไม่ได้","er");return;}
+    if(d.ok===false){st("ppSt","❌ "+(d.error||"บันทึกไม่ได้"),"er");return;}
+    Q("ppIn").value="";
+    Q("ppShow").textContent=v;
+    st("ppSt","✅ บันทึกเลขพร้อมเพย์แล้ว","ok");
+    loadAll();
+  });
+}
+
+function saveQR(){
+  if(!qrImageData){st("qrSt","⚠️ เลือกรูป QR ก่อน","er");return;}
+  Q("qrBtn").disabled=true;
+  st("qrSt","กำลังบันทึกรูป QR...","ld");
+
+  call({a:"setQR",v:qrImageData},function(d){
+    Q("qrBtn").disabled=false;
+    if(!d){st("qrSt","❌ บันทึกไม่ได้","er");return;}
+    if(d.ok===false){st("qrSt","❌ "+(d.error||"บันทึกไม่ได้"),"er");return;}
+    qrImageData="";
+    Q("qrFile").value="";
+    Q("qrPrev").style.display="none";
+    st("qrSt","✅ บันทึกรูป QR แล้ว","ok");
+    loadAll();
+  });
+}
+
+function deleteQR(){
+  if(!confirm("ลบ QR ที่อัปไว้?"))return;
+  call({a:"setQR",v:""},function(d){
+    if(d && d.ok===false){st("qrSt","❌ "+(d.error||"ลบไม่ได้"),"er");return;}
+    st("qrSt","✅ ลบ QR แล้ว ระบบจะใช้ QR อัตโนมัติ","ok");
+    loadAll();
+  });
+}
+</script>
+</body>
+</html>
