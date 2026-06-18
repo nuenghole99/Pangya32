@@ -151,7 +151,7 @@ h1,h2{font-family:'Prompt',sans-serif}
     <input type="file" id="slipIn" accept="image/*" style="display:none" onchange="onSlip(event)">
     <input type="file" id="slipCam" accept="image/*" capture="environment" style="display:none" onchange="onSlip(event)">
     <div style="display:flex;gap:8px;margin-top:0">
-      <button class="gb" style="flex:1;padding:11px;font-size:13px" onclick="document.getElementById('slipIn').click()">🖼️ เลือกรูปในเครื่อง</button>
+      <button id="slipBtn" class="gb" style="flex:1;padding:11px;font-size:13px" onclick="document.getElementById('slipIn').click()">🖼️ เลือกรูปในเครื่อง</button>
       <button class="gb" style="flex:1;padding:11px;font-size:13px" onclick="document.getElementById('slipCam').click()">📷 ถ่ายสลิป</button>
     </div>
     <button class="sn" style="margin-top:9px" onclick="payOk()">✅ จ่ายแล้ว ส่งออเดอร์</button>
@@ -247,11 +247,15 @@ function confirm_(){
   lo={house:house,name:Q("cname").value.trim(),note:Q("note").value.trim(),total:t.s,pay:plb()};
   lo.text=bText(lo);
   var p=PAYS.find(function(x){return x.id===pm});
-  closeSh();
+
   if(p&&p.tp==="pp"){
-    // หน่วงนิดนึงก่อนเปิด pay screen เพื่อให้ sheet ปิดก่อน
-    setTimeout(function(){openPay(t.s);},300);
+    // เส้นทาง PromptPay: เปิดหน้าจ่ายก่อน แล้วค่อยปิดตะกร้า
+    // เพื่อไม่ให้ดูเหมือนเด้งกลับหน้าแรก ถ้ามือถือสร้าง QR ช้า/มี error
+    openPay(t.s);
+    Q("sh").classList.remove("on");
+    Q("ov").classList.remove("on");
   }else{
+    closeSh();
     setTimeout(function(){
       sendLine(lo.text);
       showDone("กดส่งข้อความใน LINE ให้ร้าน 🧑‍🍳");
@@ -265,37 +269,42 @@ function ppC(s){var c=0xFFFF;for(var i=0;i<s.length;i++){c^=s.charCodeAt(i)<<8;f
 function ppQR(t,a){var id=(t||"").replace(/[^0-9]/g,"");var acc=id.length>=13?ppF("02",id):ppF("01",("0000000000000"+id.replace(/^0/,"66")).slice(-13));var mc=ppF("29",ppF("00","A000000677010111")+acc);var p=ppF("00","01")+ppF("01",a?"12":"11")+mc+ppF("53","764");if(a)p+=ppF("54",Number(a).toFixed(2));p+=ppF("58","TH")+"6304";return p+ppC(p)}
 
 function openPay(amt){
+  var ps=Q("ps"), box=Q("qrbox"), slipPrev=Q("slipPrev"), slipBtn=Q("slipBtn");
+  if(!ps || !box){toast("เปิดหน้าชำระเงินไม่ได้");return;}
+
+  // เปิดหน้าชำระเงินทันที ห้ามรอ QR เพราะบางเครื่อง/CDN ช้าแล้วดูเหมือนเด้งกลับหน้าแรก
+  ps.style.display="flex";
+  ps.classList.add("on");
+
+  var pn=String(ppNum||"0839617064");
+  Q("pamt").textContent=B(amt);
+  Q("ppto").innerHTML="พร้อมเพย์<br><b>"+pn+"</b><br>ปังย่า บ้าน32";
+  if(slipPrev)slipPrev.innerHTML="";
+  if(slipBtn)slipBtn.innerHTML="🖼️ เลือกรูปในเครื่อง";
+  slip=null;
+
+  // ตั้ง fallback ไว้ก่อน ต่อให้สร้าง QR ไม่ได้ ก็ยังโอนด้วยเลขพร้อมเพย์ได้
+  box.innerHTML='<div style="padding:20px;text-align:center;color:#8a817c;line-height:2">โอนพร้อมเพย์<br><b style="font-size:22px;color:#e0440e">'+pn+'</b><br>ยอด '+B(amt)+'</div>';
+
   try{
-    Q("pamt").textContent=B(amt);
-    var pn=String(ppNum||"0839617064");
-    Q("ppto").innerHTML="พร้อมเพย์<br><b>"+pn+"</b><br>ปังย่า บ้าน32";
-    var box=Q("qrbox");
     if(qrImg){
       box.innerHTML='<img src="'+qrImg+'" style="width:190px;height:190px;object-fit:contain;border-radius:8px">';
-    }else{
-      try{
-        if(typeof qrcode==="undefined")throw new Error("no lib");
-        var q=qrcode(0,"M");
-        q.addData(ppQR(pn,amt));
-        q.make();
-        box.innerHTML=q.createImgTag(5,8);
-        var img=box.querySelector("img");
-        if(img){img.style.width="190px";img.style.height="190px";}
-      }catch(e){
-        box.innerHTML='<div style="padding:20px;text-align:center;color:#8a817c;line-height:2">โอนพร้อมเพย์<br><b style="font-size:22px;color:#e0440e">'+pn+'</b><br>ยอด '+B(amt)+'</div>';
-      }
+      return;
     }
-    Q("slipPrev").innerHTML="";
-    slip=null;
-    Q("ps").style.display="flex";
-    Q("ps").classList.add("on");
-  }catch(fatal){
-    toast("ลองใหม่อีกครั้ง");
+    if(typeof qrcode==="undefined")return;
+    var q=qrcode(0,"M");
+    q.addData(ppQR(pn,amt));
+    q.make();
+    box.innerHTML=q.createImgTag(5,8);
+    var img=box.querySelector("img");
+    if(img){img.style.width="190px";img.style.height="190px";}
+  }catch(e){
+    console.log("QR fallback",e);
   }
 }
 function closePay(){Q("ps").classList.remove("on");Q("ps").style.display="none";}
 function copyPP(){if(navigator.clipboard)navigator.clipboard.writeText(ppNum).then(function(){toast("คัดลอกแล้ว ✓")});else toast(ppNum)}
-function onSlip(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){var i=new Image();i.onload=function(){var sc=Math.min(1,800/i.width),w=Math.round(i.width*sc),h=Math.round(i.height*sc);var c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(i,0,0,w,h);slip=c.toDataURL("image/jpeg",.7);Q("slipPrev").innerHTML='<img class="si" src="'+slip+'">'};i.src=ev.target.result};r.readAsDataURL(f)}
+function onSlip(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){var i=new Image();i.onload=function(){var sc=Math.min(1,800/i.width),w=Math.round(i.width*sc),h=Math.round(i.height*sc);var c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(i,0,0,w,h);slip=c.toDataURL("image/jpeg",.7);Q("slipPrev").innerHTML='<img class="si" src="'+slip+'">';var slipBtn=Q("slipBtn");if(slipBtn)slipBtn.innerHTML="✅ แนบสลิปแล้ว"};i.src=ev.target.result};r.readAsDataURL(f)}
 function payOk(){var t=lo.text;if(slip)t+="\n🧾 (มีสลิปแนบ)";sendLine(t);closePay();showDone("กดส่งข้อความใน LINE ให้ร้าน 🧑‍🍳")}
 function showDone(msg){Q("dmsg").textContent=msg;Q("dn").classList.add("on")}
 function reset_(){for(var k in cart)delete cart[k];Q("house").value="";Q("cname").value="";Q("note").value="";pm=PAYS[0].id;slip=null;lo=null;Q("dn").classList.remove("on");rf()}
