@@ -287,7 +287,6 @@ function openPay(amt){
     }
     Q("slipPrev").innerHTML="";
     slip=null;
-    Q("slipBtn").innerHTML="📎 แนบสลิปการโอน";
     Q("ps").style.display="flex";
     Q("ps").classList.add("on");
   }catch(fatal){
@@ -296,7 +295,7 @@ function openPay(amt){
 }
 function closePay(){Q("ps").classList.remove("on");Q("ps").style.display="none";}
 function copyPP(){if(navigator.clipboard)navigator.clipboard.writeText(ppNum).then(function(){toast("คัดลอกแล้ว ✓")});else toast(ppNum)}
-function onSlip(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){var i=new Image();i.onload=function(){var sc=Math.min(1,800/i.width),w=Math.round(i.width*sc),h=Math.round(i.height*sc);var c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(i,0,0,w,h);slip=c.toDataURL("image/jpeg",.7);Q("slipPrev").innerHTML='<img class="si" src="'+slip+'">';Q("slipBtn").innerHTML="✅ แนบสลิปแล้ว"};i.src=ev.target.result};r.readAsDataURL(f)}
+function onSlip(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){var i=new Image();i.onload=function(){var sc=Math.min(1,800/i.width),w=Math.round(i.width*sc),h=Math.round(i.height*sc);var c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(i,0,0,w,h);slip=c.toDataURL("image/jpeg",.7);Q("slipPrev").innerHTML='<img class="si" src="'+slip+'">'};i.src=ev.target.result};r.readAsDataURL(f)}
 function payOk(){var t=lo.text;if(slip)t+="\n🧾 (มีสลิปแนบ)";sendLine(t);closePay();showDone("กดส่งข้อความใน LINE ให้ร้าน 🧑‍🍳")}
 function showDone(msg){Q("dmsg").textContent=msg;Q("dn").classList.add("on")}
 function reset_(){for(var k in cart)delete cart[k];Q("house").value="";Q("cname").value="";Q("note").value="";pm=PAYS[0].id;slip=null;lo=null;Q("dn").classList.remove("on");rf()}
