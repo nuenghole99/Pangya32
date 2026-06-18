@@ -149,7 +149,11 @@ h1,h2{font-family:'Prompt',sans-serif}
     <p class="ph">1. สแกน QR หรือคัดลอกไปจ่ายในแอปธนาคาร<br>2. แนบสลิป แล้วกดส่งออเดอร์</p>
     <div id="slipPrev"></div>
     <input type="file" id="slipIn" accept="image/*" style="display:none" onchange="onSlip(event)">
-    <button class="gb" id="slipBtn" onclick="document.getElementById('slipIn').click()">📎 แนบสลิปการโอน</button>
+    <input type="file" id="slipCam" accept="image/*" capture="environment" style="display:none" onchange="onSlip(event)">
+    <div style="display:flex;gap:8px;margin-top:0">
+      <button class="gb" style="flex:1;padding:11px;font-size:13px" onclick="document.getElementById('slipIn').click()">🖼️ เลือกรูปในเครื่อง</button>
+      <button class="gb" style="flex:1;padding:11px;font-size:13px" onclick="document.getElementById('slipCam').click()">📷 ถ่ายสลิป</button>
+    </div>
     <button class="sn" style="margin-top:9px" onclick="payOk()">✅ จ่ายแล้ว ส่งออเดอร์</button>
   </div>
 </div>
@@ -187,7 +191,9 @@ function loadMenu(){
   window[fn]=function(d){
     delete window[fn];
     menuData=d.menu||[];
-    ppNum=d.pp||"0839617064";
+    var rawPP = String(d.pp||"0839617064").replace(/\D/g,"");
+    if(rawPP.length===9) rawPP="0"+rawPP;
+    ppNum=rawPP||"0839617064";
     qrImg=d.qr||"";
     renderMenuData(menuData);
   };
