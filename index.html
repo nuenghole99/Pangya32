@@ -103,7 +103,7 @@ h1,h2{font-family:'Prompt',sans-serif}
 <div class="hero">
   <div class="hero-badge">🛵 ส่งถึงหน้าบ้าน</div>
   <h1 id="shopTitle">ปังย่า บ้าน32</h1>
-  <p>สั่งง่ายผ่านมือถือ</p>
+  <p>อร่อยร้อนๆ สั่งง่ายผ่านมือถือ</p>
   <div class="hero-open"><span class="dot"></span> เปิดรับออเดอร์อยู่</div>
 </div>
 
@@ -232,18 +232,31 @@ function renderCart(){
 function renderPays(){Q("pays").innerHTML=PAYS.map(function(p){return'<div class="pr2 '+(p.id===pm?"sel":"")+'" onclick="sp(\''+p.id+'\')"><div class="pe">'+p.em+'</div><div class="pb">'+p.lb+'</div><div class="pt">'+(p.id===pm?"✓":"")+'</div></div>'}).join("")}
 function sp(id){pm=id;renderPays()}
 function openSh(){Q("ov").classList.add("on");Q("sh").classList.add("on")}
-function closeSh(){Q("ov").classList.remove("on");Q("sh").classList.remove("on")}
+function closeSh(){
+  Q("ov").classList.remove("on");
+  Q("sh").classList.remove("on");
+}
 function plb(){return(PAYS.find(function(x){return x.id===pm})||{}).lb||""}
 function bText(o){var L=["🛎️ ออเดอร์ใหม่ — ปังย่า บ้าน32","🏠 บ้าน: "+o.house];if(o.name)L.push("👤 "+o.name);L.push("————————————");for(var k in cart)L.push("• "+menuData[k].name+" ×"+cart[k]+" "+B(menuData[k].price*cart[k]));L.push("————————————");L.push("💰 รวม "+B(o.total));L.push("💳 "+o.pay);if(o.note)L.push("📝 "+o.note);return L.join("\n")}
 function sendLine(text){window.open("https://line.me/R/share?text="+encodeURIComponent(text),"_blank")}
 
 function confirm_(){
-  var house=Q("house").value.trim();if(!house){toast("กรุณากรอกบ้านเลขที่");Q("house").focus();return;}
-  var t=tots();lo={house:house,name:Q("cname").value.trim(),note:Q("note").value.trim(),total:t.s,pay:plb()};
-  lo.text=bText(lo);closeSh();
+  var house=Q("house").value.trim();
+  if(!house){toast("กรุณากรอกบ้านเลขที่");Q("house").focus();return;}
+  var t=tots();
+  lo={house:house,name:Q("cname").value.trim(),note:Q("note").value.trim(),total:t.s,pay:plb()};
+  lo.text=bText(lo);
   var p=PAYS.find(function(x){return x.id===pm});
-  if(p&&p.tp==="pp")openPay(t.s);
-  else{sendLine(lo.text);showDone("กดส่งข้อความใน LINE ให้ร้าน 🧑‍🍳")}
+  closeSh();
+  if(p&&p.tp==="pp"){
+    // หน่วงนิดนึงก่อนเปิด pay screen เพื่อให้ sheet ปิดก่อน
+    setTimeout(function(){openPay(t.s);},300);
+  }else{
+    setTimeout(function(){
+      sendLine(lo.text);
+      showDone("กดส่งข้อความใน LINE ให้ร้าน 🧑‍🍳");
+    },300);
+  }
 }
 
 // PromptPay QR
